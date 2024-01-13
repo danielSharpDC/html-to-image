@@ -192,9 +192,22 @@ export function createImage(url: string): Promise<HTMLImageElement> {
   })
 }
 
+export function cleanSvg(svgContent = '') {
+  const regex =
+    /(<use\s)xmlns:xlink="http:\/\/www\.w3\.org\/1999\/xlink"((.+)\sxmlns:xlink(.+)\/>)/g
+  let str = svgContent
+  const worker: any = () => {
+    str = str.replace(regex, '$1$2')
+    if (str.match(regex)) return worker()
+  }
+  worker()
+  return str
+}
+
 export async function svgToDataURL(svg: SVGElement): Promise<string> {
   return Promise.resolve()
     .then(() => new XMLSerializer().serializeToString(svg))
+    .then(cleanSvg)
     .then(encodeURIComponent)
     .then((html) => `data:image/svg+xml;charset=utf-8,${html}`)
 }
